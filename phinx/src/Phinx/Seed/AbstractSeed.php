@@ -28,8 +28,8 @@
  */
 namespace Phinx\Seed;
 
-use Phinx\Db\Table;
 use Phinx\Db\Adapter\AdapterInterface;
+use Phinx\Db\Table;
 use think\console\Input as InputInterface;
 use think\console\Output as OutputInterface;
 
@@ -46,35 +46,35 @@ use think\console\Output as OutputInterface;
 abstract class AbstractSeed implements SeedInterface
 {
     /**
-     * @var AdapterInterface
+     * @var \Phinx\Db\Adapter\AdapterInterface
      */
     protected $adapter;
 
     /**
-     * @var InputInterface
+     * @var \think\console\Input
      */
     protected $input;
 
     /**
-     * @var OutputInterface
+     * @var \think\console\Output
      */
     protected $output;
 
     /**
      * Class Constructor.
      *
-     * @param InputInterface $input
-     * @param OutputInterface $output
+     * @param \think\console\Input $input
+     * @param \think\console\Output $output
      */
     final public function __construct(InputInterface $input = null, OutputInterface $output = null)
     {
-        if (!is_null($input)){
+        if (!is_null($input)) {
             $this->setInput($input);
         }
-        if (!is_null($output)){
+        if (!is_null($output)) {
             $this->setOutput($output);
         }
-        
+
         $this->init();
     }
 
@@ -95,11 +95,22 @@ abstract class AbstractSeed implements SeedInterface
     }
 
     /**
+     * Return seeds dependencies.
+     *
+     * @return array
+     */
+    public function getDependencies()
+    {
+        return [];
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function setAdapter(AdapterInterface $adapter)
     {
         $this->adapter = $adapter;
+
         return $this;
     }
 
@@ -117,6 +128,7 @@ abstract class AbstractSeed implements SeedInterface
     public function setInput(InputInterface $input)
     {
         $this->input = $input;
+
         return $this;
     }
 
@@ -134,6 +146,7 @@ abstract class AbstractSeed implements SeedInterface
     public function setOutput(OutputInterface $output)
     {
         $this->output = $output;
+
         return $this;
     }
 
@@ -192,9 +205,9 @@ abstract class AbstractSeed implements SeedInterface
     {
         // convert to table object
         if (is_string($table)) {
-            $table = new Table($table, array(), $this->getAdapter());
+            $table = new Table($table, [], $this->getAdapter());
         }
-        return $table->insert($data)->save();
+        $table->insert($data)->save();
     }
 
     /**
@@ -208,7 +221,7 @@ abstract class AbstractSeed implements SeedInterface
     /**
      * {@inheritdoc}
      */
-    public function table($tableName, $options = array())
+    public function table($tableName, $options = [])
     {
         return new Table($tableName, $options, $this->getAdapter());
     }

@@ -34,20 +34,20 @@ use think\console\Output as OutputInterface;
 abstract class AbstractTemplateCreation implements CreationInterface
 {
     /**
-     * @var InputInterface
+     * @var \think\console\Input
      */
     protected $input;
 
     /**
-     * @var OutputInterface
+     * @var \think\console\Output
      */
     protected $output;
 
     /**
      * Class Constructor.
      *
-     * @param InputInterface|null  $input
-     * @param OutputInterface|null $output
+     * @param \think\console\Input|null  $input
+     * @param \think\console\Output|null $output
      */
     public function __construct(InputInterface $input = null, OutputInterface $output = null)
     {
