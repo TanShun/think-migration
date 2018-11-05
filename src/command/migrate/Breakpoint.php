@@ -21,10 +21,11 @@ class Breakpoint extends Migrate
     protected function configure()
     {
         $this->setName('migrate:breakpoint')
-             ->setDescription('Manage breakpoints')
-             ->addOption('--target', '-t', InputOption::VALUE_REQUIRED, 'The version number to set or clear a breakpoint against')
-             ->addOption('--remove-all', '-r', InputOption::VALUE_NONE, 'Remove all breakpoints')
-             ->setHelp(<<<EOT
+            ->setDescription('Manage breakpoints')
+            ->addOption('--target', '-t', InputOption::VALUE_REQUIRED, 'The version number to set or clear a breakpoint against')
+            ->addOption('--remove-all', '-r', InputOption::VALUE_NONE, 'Remove all breakpoints')
+            ->addOption('--connection', '-c', InputOption::VALUE_REQUIRED, 'The database connection to migrate to')
+            ->setHelp(<<<EOT
                  The <info>breakpoint</info> command allows you to set or clear a breakpoint against a specific target to inhibit rollbacks beyond a certain target.
 If no target is supplied then the most recent migration will be used.
 You cannot specify un-migrated targets
@@ -33,13 +34,16 @@ You cannot specify un-migrated targets
 <info>phinx breakpoint -t 20110103081132</info>
 <info>phinx breakpoint -r</info>
 EOT
-             );
+            );
     }
 
     protected function execute(Input $input, Output $output)
     {
-        $version   = $input->getOption('target');
-        $removeAll = $input->getOption('remove-all');
+        $version    = $input->getOption('target');
+        $removeAll  = $input->getOption('remove-all');
+        $connection = $input->getOption('connection');
+
+        $this->setConnection($connection);
 
         if ($version && $removeAll) {
             throw new \InvalidArgumentException('Cannot toggle a breakpoint and remove all breakpoints at the same time.');

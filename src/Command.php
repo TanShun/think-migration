@@ -17,6 +17,29 @@ use think\facade\Config;
 
 abstract class Command extends \think\console\Command
 {
+    /**
+     * 数据库连接
+     * @var string
+     */
+    protected $connection = '';
+
+    /**
+     * 设置数据库连接
+     * @param string $connection
+     */
+    public function setConnection($connection = '')
+    {
+        $this->connection = $connection;
+    }
+
+    /**
+     * 获取数据库连接
+     * @return string
+     */
+    public function getConnection()
+    {
+        return $this->connection;
+    }
 
     public function getAdapter()
     {
@@ -43,30 +66,30 @@ abstract class Command extends \think\console\Command
      */
     protected function getDbConfig()
     {
-        $config = Db::connect()->getConfig();
+        $config = Db::connect($this->getConnection())->getConfig();
 
         if (0 == $config['deploy']) {
             $dbConfig = [
-                'adapter'      => $config['type'],
-                'host'         => $config['hostname'],
-                'name'         => $config['database'],
-                'user'         => $config['username'],
-                'pass'         => $config['password'],
-                'port'         => $config['hostport'],
-                'charset'      => $config['charset'],
-                'table_prefix' => $config['prefix'],
+                'adapter'       => $config['type'],
+                'host'          => $config['hostname'],
+                'name'          => $config['database'],
+                'user'          => $config['username'],
+                'pass'          => $config['password'],
+                'port'          => $config['hostport'],
+                'charset'       => $config['charset'],
+                'table_prefix'  => $config['prefix'],
                 'version_order' => empty($config['version_order']) ? 'creation' : $config['version_order'],
             ];
         } else {
             $dbConfig = [
-                'adapter'      => explode(',', $config['type'])[0],
-                'host'         => explode(',', $config['hostname'])[0],
-                'name'         => explode(',', $config['database'])[0],
-                'user'         => explode(',', $config['username'])[0],
-                'pass'         => explode(',', $config['password'])[0],
-                'port'         => explode(',', $config['hostport'])[0],
-                'charset'      => explode(',', $config['charset'])[0],
-                'table_prefix' => explode(',', $config['prefix'])[0],
+                'adapter'       => explode(',', $config['type'])[0],
+                'host'          => explode(',', $config['hostname'])[0],
+                'name'          => explode(',', $config['database'])[0],
+                'user'          => explode(',', $config['username'])[0],
+                'pass'          => explode(',', $config['password'])[0],
+                'port'          => explode(',', $config['hostport'])[0],
+                'charset'       => explode(',', $config['charset'])[0],
+                'table_prefix'  => explode(',', $config['prefix'])[0],
                 'version_order' => explode(',', empty($config['version_order']) ? 'creation' : $config['version_order'])[0],
             ];
         }

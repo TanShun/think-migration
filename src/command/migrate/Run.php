@@ -23,10 +23,12 @@ class Run extends Migrate
     protected function configure()
     {
         $this->setName('migrate:run')
-             ->setDescription('Migrate the database')
-             ->addOption('--target', '-t', InputOption::VALUE_REQUIRED, 'The version number to migrate to')
-             ->addOption('--date', '-d', InputOption::VALUE_REQUIRED, 'The date to migrate to')
-             ->setHelp(<<<EOT
+            ->setDescription('Migrate the database')
+            ->addOption('--target', '-t', InputOption::VALUE_REQUIRED, 'The version number to migrate to')
+            ->addOption('--date', '-d', InputOption::VALUE_REQUIRED, 'The date to migrate to')
+            ->addOption('--connection', '-c', InputOption::VALUE_REQUIRED, 'The database connection to migrate to')
+            ->addOption('--dry-run', '', InputOption::VALUE_NONE, 'Print or log the queries to standard output without executing them')
+            ->setHelp(<<<EOT
 The <info>migrate:run</info> command runs all available migrations, optionally up to a specific version
 
 <info>php console migrate:run</info>
@@ -35,7 +37,7 @@ The <info>migrate:run</info> command runs all available migrations, optionally u
 <info>php console migrate:run -v</info>
 
 EOT
-             );
+            );
     }
 
     /**
@@ -47,8 +49,18 @@ EOT
      */
     protected function execute(Input $input, Output $output)
     {
-        $version = $input->getOption('target');
-        $date    = $input->getOption('date');
+        $version    = $input->getOption('target');
+        $date       = $input->getOption('date');
+        $connection = $input->getOption('connection');
+        $isDryRun   = $input->getOption('dry-run');
+
+        if ($isDryRun) {
+            $this->getAdapter()
+                ->setInput($input)
+                ->serOutput($output);
+        }
+
+        $this->setConnection($connection);
 
         // run the migrations
         $start = microtime(true);

@@ -23,9 +23,10 @@ class Run extends Seed
     protected function configure()
     {
         $this->setName('seed:run')
-             ->setDescription('Run database seeders')
-             ->addOption('--seed', '-s', InputOption::VALUE_REQUIRED, 'What is the name of the seeder?')
-             ->setHelp(<<<EOT
+            ->setDescription('Run database seeders')
+            ->addOption('--seed', '-s', InputOption::VALUE_REQUIRED, 'What is the name of the seeder?')
+            ->addOption('--connection', '-c', InputOption::VALUE_REQUIRED, 'The database connection to migrate to')
+            ->setHelp(<<<EOT
                 The <info>seed:run</info> command runs all available or individual seeders
 
 <info>php console seed:run</info>
@@ -33,7 +34,7 @@ class Run extends Seed
 <info>php console seed:run -v</info>
 
 EOT
-             );
+            );
     }
 
     /**
@@ -45,7 +46,10 @@ EOT
      */
     protected function execute(Input $input, Output $output)
     {
-        $seed = $input->getOption('seed');
+        $seed       = $input->getOption('seed');
+        $connection = $input->getOption('connection');
+
+        $this->setConnection($connection);
 
         // run the seed(ers)
         $start = microtime(true);

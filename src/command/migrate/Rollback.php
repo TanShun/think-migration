@@ -10,8 +10,8 @@
 namespace think\migration\command\migrate;
 
 use Phinx\Migration\MigrationInterface;
-use think\console\input\Option as InputOption;
 use think\console\Input;
+use think\console\input\Option as InputOption;
 use think\console\Output;
 use think\migration\command\Migrate;
 
@@ -23,11 +23,12 @@ class Rollback extends Migrate
     protected function configure()
     {
         $this->setName('migrate:rollback')
-             ->setDescription('Rollback the last or to a specific migration')
-             ->addOption('--target', '-t', InputOption::VALUE_REQUIRED, 'The version number to rollback to')
-             ->addOption('--date', '-d', InputOption::VALUE_REQUIRED, 'The date to rollback to')
-             ->addOption('--force', '-f', InputOption::VALUE_NONE, 'Force rollback to ignore breakpoints')
-             ->setHelp(<<<EOT
+            ->setDescription('Rollback the last or to a specific migration')
+            ->addOption('--target', '-t', InputOption::VALUE_REQUIRED, 'The version number to rollback to')
+            ->addOption('--date', '-d', InputOption::VALUE_REQUIRED, 'The date to rollback to')
+            ->addOption('--force', '-f', InputOption::VALUE_NONE, 'Force rollback to ignore breakpoints')
+            ->addOption('--connection', '-c', InputOption::VALUE_REQUIRED, 'The database connection to migrate to')
+            ->setHelp(<<<EOT
 The <info>migrate:rollback</info> command reverts the last migration, or optionally up to a specific version
 
 <info>php console migrate:rollback</info>
@@ -36,7 +37,7 @@ The <info>migrate:rollback</info> command reverts the last migration, or optiona
 <info>php console migrate:rollback -v</info>
 
 EOT
-             );
+            );
     }
 
     /**
@@ -48,9 +49,12 @@ EOT
      */
     protected function execute(Input $input, Output $output)
     {
-        $version = $input->getOption('target');
-        $date    = $input->getOption('date');
-        $force   = !!$input->getOption('force');
+        $version    = $input->getOption('target');
+        $date       = $input->getOption('date');
+        $force      = !!$input->getOption('force');
+        $connection = $input->getOption('connection');
+
+        $this->setConnection($connection);
 
         // rollback the specified environment
         $start = microtime(true);

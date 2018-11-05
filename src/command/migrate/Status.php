@@ -9,8 +9,8 @@
 
 namespace think\migration\command\migrate;
 
-use think\console\input\Option as InputOption;
 use think\console\Input;
+use think\console\input\Option as InputOption;
 use think\console\Output;
 use think\migration\command\Migrate;
 
@@ -22,15 +22,16 @@ class Status extends Migrate
     protected function configure()
     {
         $this->setName('migrate:status')
-             ->setDescription('Show migration status')
-             ->addOption('--format', '-f', InputOption::VALUE_REQUIRED, 'The output format: text or json. Defaults to text.')
-             ->setHelp(<<<EOT
+            ->setDescription('Show migration status')
+            ->addOption('--format', '-f', InputOption::VALUE_REQUIRED, 'The output format: text or json. Defaults to text.')
+            ->addOption('--connection', '-c', InputOption::VALUE_REQUIRED, 'The database connection to migrate to')
+            ->setHelp(<<<EOT
 The <info>migrate:status</info> command prints a list of all migrations, along with their current status
 
 <info>php console migrate:status</info>
 <info>php console migrate:status -f json</info>
 EOT
-             );
+            );
     }
 
     /**
@@ -42,7 +43,10 @@ EOT
      */
     protected function execute(Input $input, Output $output)
     {
-        $format = $input->getOption('format');
+        $format     = $input->getOption('format');
+        $connection = $input->getOption('connection');
+
+        $this->setConnection($connection);
 
         if (null !== $format) {
             $output->writeln('<info>using format</info> ' . $format);
@@ -86,7 +90,7 @@ EOT
                 $migrations[] = [
                     'migration_status' => trim(strip_tags($status)),
                     'migration_id'     => sprintf('%14.0f', $migration->getVersion()),
-                    'migration_name'   => $migration->getName()
+                    'migration_name'   => $migration->getName(),
                 ];
                 unset($versions[$migration->getVersion()]);
             }
@@ -113,7 +117,7 @@ EOT
                 case 'json':
                     $output->writeln(json_encode([
                         'pending_count' => count($this->getMigrations()),
-                        'migrations'    => $migrations
+                        'migrations'    => $migrations,
                     ]));
                     break;
                 default:
