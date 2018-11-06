@@ -11,12 +11,15 @@ namespace think\migration\command\migrate;
 
 use Phinx\Migration\MigrationInterface;
 use think\console\Input;
+use think\console\input\Definition;
 use think\console\input\Option as InputOption;
 use think\console\Output;
 use think\migration\command\Migrate;
 
 class Run extends Migrate
 {
+    protected $format = 'database';
+
     /**
      * {@inheritdoc}
      */
@@ -27,7 +30,8 @@ class Run extends Migrate
             ->addOption('--target', '-t', InputOption::VALUE_REQUIRED, 'The version number to migrate to')
             ->addOption('--date', '-d', InputOption::VALUE_REQUIRED, 'The date to migrate to')
             ->addOption('--connection', '-c', InputOption::VALUE_REQUIRED, 'The database connection to migrate to')
-            ->addOption('--dry-run', '', InputOption::VALUE_NONE, 'Print or log the queries to standard output without executing them')
+            ->addOption('--dry-run', '', InputOption::VALUE_NONE, 'Print the queries to standard output without executing them')
+            ->addOption('--sql', '-s', InputOption::VALUE_NONE, 'Log the queries to sql file without executing them')
             ->setHelp(<<<EOT
 The <info>migrate:run</info> command runs all available migrations, optionally up to a specific version
 
@@ -53,11 +57,18 @@ EOT
         $date       = $input->getOption('date');
         $connection = $input->getOption('connection');
         $isDryRun   = $input->getOption('dry-run');
+        $sql        = $input->getOption('sql');
 
-        if ($isDryRun) {
-            $this->getAdapter()
-                ->setInput($input)
-                ->serOutput($output);
+        if ($isDryRun or $sql) {
+
+            if ($isDryRun) {
+                $this->format = 'console';
+            }
+            if ($sql) {
+                $this->format = 'file';
+            }
+
+            $this->setDryRunInput()->setFileOutput();
         }
 
         $this->setConnection($connection);
@@ -93,9 +104,10 @@ EOT
 
     protected function migrate($version = null)
     {
-        $migrations = $this->getMigrations();
-        $versions   = $this->getVersions();
-        $current    = $this->getCurrentVersion();
+        $migrations     = $this->getMigrations();
+        $hasSchemaTable = $this->hasSchemaTableWithoutCreating();
+        $versions       = $this->format !== 'database' && !$hasSchemaTable ? [] : $this->getVersions();
+        $current        = $this->format !== 'database' && !$hasSchemaTable ? 0 : $this->getCurrentVersion();
 
         if (empty($versions) && empty($migrations)) {
             return;
@@ -122,6 +134,9 @@ EOT
                 }
 
                 if (in_array($migration->getVersion(), $versions)) {
+                    if ($this->format === 'file') {
+                        $this->getAdapter()->getOutput()->setName($migration->getName())->newFile();
+                    }
                     $this->executeMigration($migration, MigrationInterface::DOWN);
                 }
             }
@@ -134,6 +149,9 @@ EOT
             }
 
             if (!in_array($migration->getVersion(), $versions)) {
+                if ($this->format === 'file') {
+                    $this->getAdapter()->getOutput()->setName($migration->getName())->newFile();
+                }
                 $this->executeMigration($migration, MigrationInterface::UP);
             }
         }
@@ -149,5 +167,37 @@ EOT
         }
 
         return $version;
+    }
+
+    protected function hasSchemaTableWithoutCreating()
+    {
+        if ($this->format !== 'database') {
+            $output         = $this->getAdapter()->getOutput();
+            $hasSchemaTable = $this->getAdapter()
+                ->setOutput(new Output('nothing'))
+                ->hasSchemaTable();
+            $this->getAdapter()->setOutput($output);
+            return $hasSchemaTable;
+        }
+        return $this->getAdapter()->hasSchemaTable();
+    }
+
+    protected function setFileOutput()
+    {
+        $this->getAdapter()->setOutput(new Output('file'));
+        return $this;
+    }
+
+    protected function setDryRunInput()
+    {
+        $defdefinition = new Definition();
+        $defdefinition->addOption(new InputOption('--dry-run', '', InputOption::VALUE_NONE, '', null));
+
+        $input = new Input([]);
+        $input->bind($defdefinition);
+        $input->setOption('dry-run', true);
+
+        $this->getAdapter()->setInput($input);
+        return $this;
     }
 }
