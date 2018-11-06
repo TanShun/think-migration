@@ -61,14 +61,14 @@ EOT
 
         if ($isDryRun or $sql) {
 
+            $this->setDryRunInput();
             if ($isDryRun) {
                 $this->format = 'console';
             }
             if ($sql) {
                 $this->format = 'file';
+                $this->setFileOutput();
             }
-
-            $this->setDryRunInput()->setFileOutput();
         }
 
         $this->setConnection($connection);
