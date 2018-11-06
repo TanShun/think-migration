@@ -64,6 +64,7 @@ EOT
             $this->setDryRunInput();
             if ($isDryRun) {
                 $this->format = 'console';
+                $this->getAdapter()->setOutput($output);
             }
             if ($sql) {
                 $this->format = 'file';
