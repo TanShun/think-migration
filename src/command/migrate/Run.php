@@ -59,8 +59,9 @@ EOT
         $isDryRun   = $input->getOption('dry-run');
         $sql        = $input->getOption('sql');
 
-        if ($isDryRun or $sql) {
+        $this->setConnection($connection);
 
+        if ($isDryRun or $sql) {
             $this->setDryRunInput();
             if ($isDryRun) {
                 $this->format = 'console';
@@ -71,8 +72,6 @@ EOT
                 $this->setFileOutput();
             }
         }
-
-        $this->setConnection($connection);
 
         // run the migrations
         $start = microtime(true);
