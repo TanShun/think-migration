@@ -29,6 +29,8 @@ abstract class Migrate extends Command
      */
     protected $migrations;
 
+    protected $format = 'database';
+
     protected function getPath()
     {
         return Env::get('root_path') . 'database' . DIRECTORY_SEPARATOR . 'migrations';

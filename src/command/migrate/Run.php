@@ -18,8 +18,6 @@ use think\migration\command\Migrate;
 
 class Run extends Migrate
 {
-    protected $format = 'database';
-
     /**
      * {@inheritdoc}
      */
